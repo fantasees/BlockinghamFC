@@ -1,21 +1,22 @@
-name = "blockingham-fc"
+name = "blockinghamfc"
 main = "src/index.js"
 compatibility_date = "2024-09-23"
 
-# These get filled in for real once you create the KV namespace and R2 bucket
-# in the dashboard (see README.md). Cloudflare will show you the correct IDs
-# to paste in — you can also just add the bindings via the dashboard UI instead
-# of editing this file, either way works.
+# Baked in here so these survive every redeploy from GitHub — Cloudflare
+# reads this file as the source of truth each time it builds from the repo,
+# so bindings added only via the dashboard get wiped out on the next push.
 
-# [[kv_namespaces]]
-# binding = "POSTS"
-# id = "your-kv-namespace-id-here"
+[[kv_namespaces]]
+binding = "POSTS"
+id = "535c639b6cf1415da3e7b2fee5910118"
 
-# [[r2_buckets]]
-# binding = "IMAGES"
-# bucket_name = "blockingham-images"
+[[r2_buckets]]
+binding = "IMAGES"
+bucket_name = "blockingham-images"
 
-# Set these as plaintext/secret vars in the dashboard instead of here,
-# so they're not sitting in your public GitHub repo:
-#   ADMIN_PASSWORD
-#   WHATSAPP_LINK
+# ADMIN_PASSWORD and WHATSAPP_LINK stay as dashboard-only environment
+# variables (Settings -> Variables and Bindings) rather than in this file,
+# so they don't end up sitting in plain text in your public GitHub repo.
+# Those two should NOT get wiped on redeploy since they're plain env vars,
+# not bindings tied to wrangler.toml — but if they ever do vanish too,
+# just re-add them the same way as before.
