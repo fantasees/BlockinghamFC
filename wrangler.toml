@@ -1,0 +1,21 @@
+name = "blockingham-fc"
+main = "src/index.js"
+compatibility_date = "2024-09-23"
+
+# These get filled in for real once you create the KV namespace and R2 bucket
+# in the dashboard (see README.md). Cloudflare will show you the correct IDs
+# to paste in — you can also just add the bindings via the dashboard UI instead
+# of editing this file, either way works.
+
+# [[kv_namespaces]]
+# binding = "POSTS"
+# id = "your-kv-namespace-id-here"
+
+# [[r2_buckets]]
+# binding = "IMAGES"
+# bucket_name = "blockingham-images"
+
+# Set these as plaintext/secret vars in the dashboard instead of here,
+# so they're not sitting in your public GitHub repo:
+#   ADMIN_PASSWORD
+#   WHATSAPP_LINK
