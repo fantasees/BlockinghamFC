@@ -220,6 +220,7 @@ function escapeHtml(str = "") {
 function formatDate(ts) {
   const d = new Date(Number(ts));
   return d.toLocaleString("en-GB", {
+    timeZone: "Europe/London",
     day: "numeric",
     month: "short",
     year: "numeric",
