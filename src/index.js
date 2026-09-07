@@ -392,6 +392,15 @@ async function aboutPage(env) {
     .about-card h2 { margin-top: 0; }
     .about-card p { line-height: 1.5; }
     .join-wrap { text-align: center; margin-top: 20px; }
+    .credits {
+      margin-top: 24px;
+      padding-top: 16px;
+      border-top: 1px solid var(--bfc-card-border);
+      text-align: center;
+      font-size: 0.82rem;
+      color: var(--bfc-muted);
+    }
+    .credits strong { color: var(--bfc-text); }
   </style>
   <div class="about-card">
     <img src="${CLUB_IMAGE}" alt="${escapeHtml(SITE_NAME)}" />
@@ -406,6 +415,9 @@ async function aboutPage(env) {
       <a class="btn gold" href="${escapeHtml(waLink)}" target="_blank" rel="noopener">
         Join our WhatsApp Channel
       </a>
+    </div>
+    <div class="credits">
+      Stadium built by <strong>Jack154485</strong> · Website &amp; backend by <strong>HillySpoon730</strong>
     </div>
   </div>`;
   return html(layout({ title: `About — ${SITE_NAME}`, activePage: "about", body, env }));
