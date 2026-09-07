@@ -61,13 +61,14 @@ function layout({ title, activePage, body, env }) {
 <title>${escapeHtml(title)}</title>
 <style>
   :root {
-    --bfc-green: #1f5c3a;
-    --bfc-green-dark: #143f28;
-    --bfc-gold: #f2c744;
-    --bfc-bg: #f4f6f2;
-    --bfc-card: #ffffff;
-    --bfc-text: #1c1f1c;
-    --bfc-muted: #6b7268;
+    --bfc-red: #e02424;
+    --bfc-red-dark: #a10f0f;
+    --bfc-accent: #ff3b3b;
+    --bfc-bg: #0c0c0d;
+    --bfc-card: #17171a;
+    --bfc-card-border: #262629;
+    --bfc-text: #f2f2f2;
+    --bfc-muted: #8c8c92;
     --radius: 14px;
   }
   * { box-sizing: border-box; }
@@ -78,9 +79,10 @@ function layout({ title, activePage, body, env }) {
     color: var(--bfc-text);
   }
   header.site-header {
-    background: linear-gradient(135deg, var(--bfc-green), var(--bfc-green-dark));
+    background: #000;
     color: #fff;
     padding: 18px 16px;
+    border-bottom: 2px solid var(--bfc-red);
   }
   .header-inner {
     max-width: 640px;
@@ -94,18 +96,19 @@ function layout({ title, activePage, body, env }) {
     height: 48px;
     border-radius: 10px;
     object-fit: cover;
-    border: 2px solid var(--bfc-gold);
+    border: 2px solid var(--bfc-red);
     flex-shrink: 0;
   }
   .header-titles h1 {
     margin: 0;
     font-size: 1.25rem;
     line-height: 1.2;
+    letter-spacing: 0.02em;
   }
   .header-titles p {
     margin: 2px 0 0;
     font-size: 0.8rem;
-    color: #d9e8dd;
+    color: #b3b3b8;
   }
   nav.site-nav {
     max-width: 640px;
@@ -115,14 +118,15 @@ function layout({ title, activePage, body, env }) {
     font-size: 0.9rem;
   }
   nav.site-nav a {
-    color: #fff;
+    color: #dcdce0;
     text-decoration: none;
     padding: 4px 2px;
     border-bottom: 2px solid transparent;
     opacity: 0.85;
   }
   nav.site-nav a.active {
-    border-bottom-color: var(--bfc-gold);
+    border-bottom-color: var(--bfc-red);
+    color: #fff;
     opacity: 1;
     font-weight: 600;
   }
@@ -136,6 +140,7 @@ function layout({ title, activePage, body, env }) {
     padding: 24px 16px 40px;
     color: var(--bfc-muted);
     font-size: 0.8rem;
+    border-top: 1px solid var(--bfc-card-border);
   }
   footer.site-footer .wink {
     margin-top: 6px;
@@ -144,7 +149,7 @@ function layout({ title, activePage, body, env }) {
   }
   .btn {
     display: inline-block;
-    background: var(--bfc-green);
+    background: var(--bfc-red);
     color: #fff;
     padding: 10px 18px;
     border-radius: 999px;
@@ -155,11 +160,11 @@ function layout({ title, activePage, body, env }) {
     cursor: pointer;
   }
   .btn.gold {
-    background: var(--bfc-gold);
-    color: var(--bfc-green-dark);
+    background: var(--bfc-accent);
+    color: #0c0c0d;
   }
   .btn.danger {
-    background: #b3382c;
+    background: #7a1414;
   }
   .btn.small {
     padding: 6px 12px;
@@ -223,6 +228,17 @@ function formatDate(ts) {
   });
 }
 
+function extractYoutubeId(url = "") {
+  const patterns = [
+    /(?:youtube\.com\/watch\?v=|youtube\.com\/embed\/|youtu\.be\/)([a-zA-Z0-9_-]{11})/,
+  ];
+  for (const re of patterns) {
+    const match = url.match(re);
+    if (match) return match[1];
+  }
+  return null;
+}
+
 /* ---------------------------------------------------------------- */
 /* Home page — WhatsApp-channel style feed                           */
 /* ---------------------------------------------------------------- */
@@ -244,7 +260,8 @@ async function homePage(env) {
       border-radius: var(--radius);
       padding: 14px 14px 12px;
       margin-bottom: 14px;
-      box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+      box-shadow: 0 1px 3px rgba(0,0,0,0.4);
+      border: 1px solid var(--bfc-card-border);
     }
     .feed-post .meta {
       display: flex;
@@ -283,6 +300,30 @@ async function homePage(env) {
       display: block;
       margin-top: 6px;
     }
+    .feed-post video.post-video {
+      width: 100%;
+      border-radius: 10px;
+      display: block;
+      margin-top: 6px;
+      background: #000;
+    }
+    .feed-post .yt-wrap {
+      position: relative;
+      width: 100%;
+      padding-top: 56.25%; /* 16:9 */
+      margin-top: 6px;
+      border-radius: 10px;
+      overflow: hidden;
+      background: #000;
+    }
+    .feed-post .yt-wrap iframe {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      border: 0;
+    }
     .empty-state {
       text-align: center;
       color: var(--bfc-muted);
@@ -293,19 +334,30 @@ async function homePage(env) {
 
   const postsHtml = posts.length
     ? posts
-        .map(
-          (p) => `
+        .map((p) => {
+          const ytId = p.youtube ? extractYoutubeId(p.youtube) : null;
+          return `
     <article class="feed-post">
       <div class="meta">
         <img src="${CLUB_IMAGE}" alt="" />
         <span class="name">${escapeHtml(SITE_NAME)}</span>
         <span class="time">${formatDate(p.date)}</span>
       </div>
-      <h2>${escapeHtml(p.title)}</h2>
-      <p>${escapeHtml(p.text)}</p>
+      ${p.title ? `<h2>${escapeHtml(p.title)}</h2>` : ""}
+      ${p.text ? `<p>${escapeHtml(p.text)}</p>` : ""}
       ${p.image ? `<img class="post-image" src="${escapeHtml(p.image)}" alt="" />` : ""}
-    </article>`
-        )
+      ${
+        p.video
+          ? `<video class="post-video" src="${escapeHtml(p.video)}" controls playsinline></video>`
+          : ""
+      }
+      ${
+        ytId
+          ? `<div class="yt-wrap"><iframe src="https://www.youtube.com/embed/${ytId}" title="YouTube video" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe></div>`
+          : ""
+      }
+    </article>`;
+        })
         .join("")
     : `<div class="empty-state">No updates posted yet — check back soon.</div>`;
 
@@ -325,7 +377,8 @@ async function aboutPage(env) {
       background: var(--bfc-card);
       border-radius: var(--radius);
       padding: 20px;
-      box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+      box-shadow: 0 1px 3px rgba(0,0,0,0.4);
+      border: 1px solid var(--bfc-card-border);
     }
     .about-card img {
       width: 100%;
@@ -389,7 +442,7 @@ async function handleLogin(request, env) {
       layout({
         title: "Admin login",
         activePage: "",
-        body: `<p style="color:#b3382c;">Wrong password. <a href="/admin">Try again</a>.</p>`,
+        body: `<p style="color:#ff6b6b;">Wrong password. <a href="/admin">Try again</a>.</p>`,
         env,
       }),
       401
@@ -420,14 +473,17 @@ async function adminPage(request, env) {
         padding: 24px;
         max-width: 320px;
         margin: 40px auto;
-        box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+        box-shadow: 0 1px 3px rgba(0,0,0,0.4);
+      border: 1px solid var(--bfc-card-border);
       }
       .login-card input {
         width: 100%;
         padding: 10px;
         margin: 10px 0 16px;
         border-radius: 8px;
-        border: 1px solid #ccc;
+        border: 1px solid var(--bfc-card-border);
+      background: #0c0c0d;
+      color: var(--bfc-text);
         font-size: 1rem;
       }
     </style>
@@ -451,7 +507,8 @@ async function adminPage(request, env) {
       border-radius: var(--radius);
       padding: 18px;
       margin-bottom: 20px;
-      box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+      box-shadow: 0 1px 3px rgba(0,0,0,0.4);
+      border: 1px solid var(--bfc-card-border);
     }
     .admin-card h2 { margin-top: 0; font-size: 1.1rem; }
     .admin-card label {
@@ -465,7 +522,9 @@ async function adminPage(request, env) {
       width: 100%;
       padding: 10px;
       border-radius: 8px;
-      border: 1px solid #ccc;
+      border: 1px solid var(--bfc-card-border);
+      background: #0c0c0d;
+      color: var(--bfc-text);
       font-size: 0.95rem;
       font-family: inherit;
     }
@@ -479,7 +538,7 @@ async function adminPage(request, env) {
       align-items: center;
       gap: 10px;
       padding: 10px 0;
-      border-bottom: 1px solid #eee;
+      border-bottom: 1px solid var(--bfc-card-border);
     }
     .existing-post:last-child { border-bottom: none; }
     .existing-post .ep-title { font-weight: 600; font-size: 0.9rem; }
@@ -494,15 +553,21 @@ async function adminPage(request, env) {
 
   <div class="admin-card">
     <h2>New post</h2>
+    <p style="color:var(--bfc-muted); font-size:0.8rem; margin-top:-4px;">
+      All fields are optional, but at least one of Title, Body, or Image/YouTube must be filled in.
+    </p>
     <form id="post-form">
-      <label for="title">Title</label>
-      <input type="text" id="title" name="title" required />
+      <label for="title">Title (optional)</label>
+      <input type="text" id="title" name="title" />
 
-      <label for="text">Text</label>
-      <textarea id="text" name="text" required></textarea>
+      <label for="text">Body / text (optional)</label>
+      <textarea id="text" name="text"></textarea>
 
       <label for="image">Image (optional)</label>
       <input type="file" id="image" name="image" accept="image/*" />
+
+      <label for="youtube">YouTube link (optional)</label>
+      <input type="text" id="youtube" name="youtube" placeholder="https://youtube.com/watch?v=..." />
       <div id="upload-status"></div>
 
       <div class="admin-actions">
@@ -521,7 +586,7 @@ async function adminPage(request, env) {
                 (p) => `
         <div class="existing-post" data-id="${escapeHtml(p.id)}">
           <div>
-            <div class="ep-title">${escapeHtml(p.title)}</div>
+            <div class="ep-title">${escapeHtml(p.title || p.youtube || "(image/video post)")}</div>
             <div class="ep-date">${formatDate(p.date)}</div>
           </div>
           <button class="btn small danger delete-btn" data-id="${escapeHtml(p.id)}">Delete</button>
@@ -539,15 +604,22 @@ async function adminPage(request, env) {
 
     form.addEventListener('submit', async (e) => {
       e.preventDefault();
-      const title = document.getElementById('title').value;
-      const text = document.getElementById('text').value;
+      const title = document.getElementById('title').value.trim();
+      const text = document.getElementById('text').value.trim();
+      const youtube = document.getElementById('youtube').value.trim();
       const imageFile = document.getElementById('image').files[0];
+
+      if (!title && !text && !imageFile && !youtube) {
+        uploadStatus.textContent = 'Fill in at least one of Title, Body, or Image/YouTube.';
+        return;
+      }
+
       let imageUrl = '';
 
       if (imageFile) {
         uploadStatus.textContent = 'Uploading image...';
         const fd = new FormData();
-        fd.append('image', imageFile);
+        fd.append('file', imageFile);
         const res = await fetch('/api/upload', { method: 'POST', body: fd });
         if (!res.ok) {
           uploadStatus.textContent = 'Image upload failed.';
@@ -555,19 +627,21 @@ async function adminPage(request, env) {
         }
         const data = await res.json();
         imageUrl = data.url;
-        uploadStatus.textContent = 'Image uploaded.';
       }
+
+      uploadStatus.textContent = 'Publishing post...';
 
       const res = await fetch('/api/posts', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ title, text, image: imageUrl }),
+        body: JSON.stringify({ title, text, image: imageUrl, youtube }),
       });
 
       if (res.ok) {
         window.location.reload();
       } else {
-        uploadStatus.textContent = 'Failed to publish post.';
+        const data = await res.json().catch(() => ({}));
+        uploadStatus.textContent = data.error || 'Failed to publish post.';
       }
     });
 
@@ -599,17 +673,23 @@ async function createPost(request, env) {
   const title = (data.title || "").toString().trim();
   const text = (data.text || "").toString().trim();
   const image = (data.image || "").toString().trim();
+  const video = (data.video || "").toString().trim();
+  const youtube = (data.youtube || "").toString().trim();
 
-  if (!title || !text) {
-    return new Response(JSON.stringify({ error: "Title and text are required" }), {
-      status: 400,
-      headers: { "Content-Type": "application/json" },
-    });
+  if (!title && !text && !image && !video && !youtube) {
+    return new Response(
+      JSON.stringify({ error: "Fill in at least one of title, body, or image/YouTube" }),
+      {
+        status: 400,
+        headers: { "Content-Type": "application/json" },
+      }
+    );
   }
 
   const ts = Date.now();
   const id = String(ts);
-  const post = { id, title, text, image, date: ts };
+  const post = { id, title, text, image, video, youtube, date: ts };
+  await env.POSTS.put(`post:${ts}`, JSON.stringify(post));
   await env.POSTS.put(`post:${ts}`, JSON.stringify(post));
 
   return new Response(JSON.stringify({ ok: true, post }), {
@@ -630,26 +710,39 @@ async function deletePost(request, env, path) {
 }
 
 /* ---------------------------------------------------------------- */
-/* API: image upload / serve (R2)                                    */
+/* API: media upload / serve (R2) — handles both images and video    */
 /* ---------------------------------------------------------------- */
 
 async function uploadImage(request, env) {
   if (!isAuthed(request, env)) return new Response("Unauthorized", { status: 401 });
 
-  const form = await request.formData();
-  const file = form.get("image");
+  let form;
+  try {
+    form = await request.formData();
+  } catch (err) {
+    // Usually means the upload exceeded Cloudflare's request body limit (100MB on Free/Pro).
+    return new Response(JSON.stringify({ error: "File too large or upload failed" }), {
+      status: 413,
+      headers: { "Content-Type": "application/json" },
+    });
+  }
+
+  // Accept "file" (new) but fall back to "image" for backwards compatibility.
+  const file = form.get("file") || form.get("image");
   if (!file || typeof file === "string") {
-    return new Response(JSON.stringify({ error: "No image provided" }), {
+    return new Response(JSON.stringify({ error: "No file provided" }), {
       status: 400,
       headers: { "Content-Type": "application/json" },
     });
   }
 
-  const ext = (file.name.split(".").pop() || "jpg").toLowerCase();
-  const key = `img/${Date.now()}-${Math.random().toString(36).slice(2, 8)}.${ext}`;
+  const isVideo = (file.type || "").startsWith("video/");
+  const folder = isVideo ? "vid" : "img";
+  const ext = (file.name.split(".").pop() || (isVideo ? "mp4" : "jpg")).toLowerCase();
+  const key = `${folder}/${Date.now()}-${Math.random().toString(36).slice(2, 8)}.${ext}`;
 
   await env.IMAGES.put(key, await file.arrayBuffer(), {
-    httpMetadata: { contentType: file.type || "image/jpeg" },
+    httpMetadata: { contentType: file.type || (isVideo ? "video/mp4" : "image/jpeg") },
   });
 
   return new Response(JSON.stringify({ ok: true, url: `/images/${key}` }), {
@@ -667,6 +760,7 @@ async function serveImage(request, env, path) {
   obj.writeHttpMetadata(headers);
   headers.set("etag", obj.httpEtag);
   headers.set("Cache-Control", "public, max-age=31536000, immutable");
+  headers.set("Accept-Ranges", "bytes"); // lets video seeking/scrubbing work properly
 
   return new Response(obj.body, { headers });
 }
